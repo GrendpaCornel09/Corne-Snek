@@ -1,0 +1,131 @@
+//Access Canvas & Context
+var canvas = document.getElementById("game");
+var context = canvas.getContext("2d");
+
+// Initialize Variable
+var score = 0;
+var count = 0;
+var grid = 16;
+
+//Create object
+var snake = {
+    x : 160,
+    y : 160,
+    dx : grid,
+    dy : 0,
+    cells : [],
+    maxCells : 4
+};
+
+var apple = {
+    x : 320,
+    y : 320
+};
+//Key Arrow Controller
+document.addEventListener('keydown', function(e) {
+    // Left arrow
+    if(e.which === 37 && snake.dx === 0){
+        snake.dx = -grid;
+        snake.dy = 0;
+    }
+
+    // Up arrow
+    else if(e.which === 38 && snake.dy === 0){
+        snake.dy = -grid;
+        snake.dx = 0;
+    }
+
+    // Right arrow
+    else if(e.which === 39 && snake.dx === 0){
+        snake.dx = grid;
+        snake.dy = 0;
+    }
+
+    else if(e.which === 40 && snake.dy === 0){
+        snake.dy = grid;
+        snake.dx = 0;
+    }
+});
+
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+    
+    // game loop
+    function loop() {
+        requestAnimationFrame(loop);
+        if (++count < 4) {
+            return;
+        }
+    
+        count = 0;
+        context.clearRect(0,0,canvas.width,canvas.height);
+    
+        // move snake by it's velocity
+        snake.x += snake.dx;
+        snake.y += snake.dy;
+    
+        // wrap snake position horizontally on edge of screen
+        if (snake.x < 0) {
+            snake.x = canvas.width - grid;
+        }
+        else if (snake.x >= canvas.width) {
+            snake.x = 0;
+        }
+        
+        // wrap snake position vertically on edge of screen
+        if (snake.y < 0) {
+            snake.y = canvas.height - grid;
+        }
+        else if (snake.y >= canvas.height) {
+            snake.y = 0;
+        }
+    
+        // keep track of where snake has been. front of the array is always the head
+        snake.cells.unshift({x: snake.x, y: snake.y});
+    
+        // remove cells as we move away from them
+        if (snake.cells.length > snake.maxCells) {
+            snake.cells.pop();
+        }
+    
+        // draw apple
+        context.fillStyle = 'red';
+        context.fillRect(apple.x, apple.y, grid-1, grid-1);
+    
+        // draw snake one cell at a time
+        context.fillStyle = 'palegreen';
+        snake.cells.forEach(function(cell, index) {
+            
+        // drawing 1 px smaller than the grid creates a grid effect in the snake body so you can see how long it is
+        context.fillRect(cell.x, cell.y, grid-1, grid-1);  
+    
+        // snake ate apple
+        if (cell.x === apple.x && cell.y === apple.y) {
+            score += 1;
+            document.getElementById('score').innerHTML = score;
+            snake.maxCells++;
+            apple.x = getRandomInt(0, 25) * grid;
+            apple.y = getRandomInt(0, 25) * grid;
+        }
+    
+        for (var i = index + 1; i < snake.cells.length; i++) {
+            
+        if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+            snake.x = 160;
+            snake.y = 160;
+            snake.cells = [];
+            snake.maxCells = 4;
+            snake.dx = grid;
+            snake.dy = 0;
+            apple.x = getRandomInt(0, 25) * grid;
+            apple.y = getRandomInt(0, 25) * grid;
+        }
+        }
+    });
+    }
+    
+    
+    
+requestAnimationFrame(loop);
